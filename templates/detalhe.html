@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ocorrência #{{ ocorrencia.id }} – Sistema EPI</title>
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#080c14; --surface:#0f1623; --surface2:#141e2e; --border:#1e2d45;
+    --accent:#0ea5e9; --accent2:#6366f1; --green:#22c55e; --red:#ef4444;
+    --text:#e2e8f0; --muted:#64748b; --radius:12px;
+  }
+  body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); }
+  .navbar {
+    background:var(--surface); border-bottom:1px solid var(--border);
+    height:58px; padding:0 24px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .nav-brand { display:flex; align-items:center; gap:10px; }
+  .nav-brand .icon { width:34px;height:34px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .nav-brand h1 { font-size:16px; font-weight:700; }
+  .nav-links { display:flex; gap:4px; }
+  .nav-links a { padding:7px 16px; border-radius:8px; font-size:13px; text-decoration:none; color:var(--muted); transition:.15s; }
+  .nav-links a:hover { background:var(--surface2); color:var(--text); }
+  .nav-links a.sair { background:rgba(239,68,68,.1); color:#fca5a5; }
+
+  .main { padding:32px; max-width:960px; margin:0 auto; }
+  .breadcrumb { font-size:13px; color:var(--muted); margin-bottom:20px; display:flex; align-items:center; gap:6px; }
+  .breadcrumb a { color:var(--muted); text-decoration:none; }
+  .breadcrumb a:hover { color:var(--accent); }
+  .breadcrumb span { color:var(--border); }
+
+  .page-title { font-size:22px; font-weight:800; margin-bottom:24px; display:flex; align-items:center; gap:12px; }
+  .alerta-badge {
+    padding:5px 14px; border-radius:8px; font-size:13px; font-weight:700;
+    background:rgba(239,68,68,.12); color:var(--red); border:1px solid rgba(239,68,68,.25);
+  }
+
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+  .img-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden;
+  }
+  .img-card img { width:100%; display:block; }
+  .img-placeholder { height:320px; display:flex; align-items:center; justify-content:center; font-size:64px; color:var(--border); }
+
+  .info-col { display:flex; flex-direction:column; gap:16px; }
+  .info-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; }
+  .info-card h3 { font-size:11px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.7px; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--border); }
+  .info-row { display:flex; flex-direction:column; gap:4px; margin-bottom:14px; }
+  .info-row:last-child { margin-bottom:0; }
+  .info-label { font-size:11px; color:var(--muted); font-weight:600; }
+  .info-value { font-size:15px; font-weight:700; }
+  .c-red { color:var(--red); }
+  .c-green { color:var(--green); }
+
+  .actions { display:flex; gap:10px; margin-top:24px; }
+  .btn-back {
+    padding:11px 20px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius);
+    color:var(--text); text-decoration:none; font-size:13px; font-weight:600; transition:.15s;
+  }
+  .btn-back:hover { border-color:var(--muted); }
+  .btn-wpp {
+    padding:11px 20px; background:rgba(37,211,102,.1); border:1px solid rgba(37,211,102,.3);
+    border-radius:var(--radius); color:#25d366; font-size:13px; font-weight:700;
+    cursor:pointer; transition:.15s; display:flex; align-items:center; gap:7px;
+  }
+  .btn-wpp:hover { background:rgba(37,211,102,.2); }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="icon">🦺</div>
+    <div><h1>Sistema EPI</h1></div>
+  </div>
+  <div class="nav-links">
+    <a href="/monitoramento">📹 Monitoramento</a>
+    <a href="/dados">🗂 Dados</a>
+    <a href="/logout" class="sair">Sair</a>
+  </div>
+</nav>
+
+<div class="main">
+  <div class="breadcrumb">
+    <a href="/dados">← Dados</a>
+    <span>/</span>
+    <span>Ocorrência #{{ ocorrencia.id }}</span>
+  </div>
+
+  <div class="page-title">
+    Ocorrência #{{ ocorrencia.id }}
+    <span class="alerta-badge">⚠ EPI AUSENTE</span>
+  </div>
+
+  <div class="grid">
+    <div class="img-card">
+      {% if ocorrencia.imagem_base64 %}
+        <img src="data:image/jpeg;base64,{{ ocorrencia.imagem_base64 }}" alt="Captura">
+      {% else %}
+        <div class="img-placeholder">📷</div>
+      {% endif %}
+    </div>
+
+    <div class="info-col">
+      <div class="info-card">
+        <h3>Detalhes da Ocorrência</h3>
+        <div class="info-row">
+          <span class="info-label">EPIs Ausentes</span>
+          <span class="info-value c-red">{{ ocorrencia.epis_ausentes.upper() }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Data e Horário</span>
+          <span class="info-value">{{ ocorrencia.data_hora }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Câmera</span>
+          <span class="info-value">{{ ocorrencia.camera_id.upper() }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Status</span>
+          <span class="info-value {% if ocorrencia.revisado %}c-green{% else %}c-red{% endif %}">
+            {% if ocorrencia.revisado %}✓ Revisado{% else %}Pendente{% endif %}
+          </span>
+        </div>
+      </div>
+
+      <div class="info-card">
+        <h3>Base Legal</h3>
+        <div class="info-row">
+          <span class="info-label">Norma</span>
+          <span class="info-value">NR-6 – EPIs</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Órgão</span>
+          <span class="info-value">Ministério do Trabalho e Emprego</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <a href="/dados" class="btn-back">← Voltar</a>
+    <button class="btn-wpp" onclick="compartilhar()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+      Compartilhar no WhatsApp
+    </button>
+  </div>
+</div>
+
+<script>
+function compartilhar() {
+  const url = window.location.href;
+  const msg = `⚠ *ALERTA EPI – {{ ocorrencia.epis_ausentes.upper() }}*\n\n📷 Câmera: {{ ocorrencia.camera_id }}\n🕐 Data/Hora: {{ ocorrencia.data_hora }}\n\n🔗 Ver registro: ${url}`;
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
+</script>
+</body>
+</html>

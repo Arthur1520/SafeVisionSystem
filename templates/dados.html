@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dados – Sistema EPI</title>
+<style>
+  *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+  :root {
+    --bg:#080c14; --surface:#0f1623; --surface2:#141e2e; --border:#1e2d45;
+    --accent:#0ea5e9; --accent2:#6366f1; --green:#22c55e; --red:#ef4444;
+    --yellow:#f59e0b; --text:#e2e8f0; --muted:#64748b; --radius:12px;
+  }
+  body { font-family:'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+
+  .navbar {
+    background:var(--surface); border-bottom:1px solid var(--border);
+    height:58px; padding:0 24px; display:flex; align-items:center; justify-content:space-between;
+    position:sticky; top:0; z-index:100;
+  }
+  .nav-brand { display:flex; align-items:center; gap:10px; }
+  .nav-brand .icon { width:34px;height:34px; background:linear-gradient(135deg,var(--accent),var(--accent2)); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; }
+  .nav-brand h1 { font-size:16px; font-weight:700; }
+  .nav-links { display:flex; gap:4px; }
+  .nav-links a { padding:7px 16px; border-radius:8px; font-size:13px; text-decoration:none; color:var(--muted); transition:.15s; font-weight:500; }
+  .nav-links a:hover { background:var(--surface2); color:var(--text); }
+  .nav-links a.ativo { background:var(--surface2); color:var(--text); }
+  .nav-links a.sair { background:rgba(239,68,68,.1); color:#fca5a5; }
+  .nav-user { font-size:13px; color:var(--muted); }
+
+  .main { padding:24px; max-width:1400px; margin:0 auto; }
+
+  .page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+  .page-header h2 { font-size:20px; font-weight:800; }
+  .badge { background:var(--surface2); border:1px solid var(--border); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--muted); }
+
+  /* FILTROS */
+  .filtros-card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    padding:18px 20px; margin-bottom:22px;
+  }
+  .filtros-title { font-size:12px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.6px; margin-bottom:14px; }
+  .filtros-row { display:flex; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+  .filtro-group { display:flex; flex-direction:column; gap:5px; }
+  .filtro-group label { font-size:11px; color:var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+  .filtro-group select, .filtro-group input {
+    background:var(--surface2); border:1px solid var(--border); border-radius:8px;
+    color:var(--text); padding:8px 12px; font-size:13px; outline:none; transition:.15s;
+    min-width:140px;
+  }
+  .filtro-group select:focus, .filtro-group input:focus { border-color:var(--accent); }
+  .filtros-btns { display:flex; gap:8px; align-items:flex-end; }
+  .btn-filtrar {
+    padding:9px 20px; background:var(--accent); color:#fff; border:none; border-radius:8px;
+    font-size:13px; font-weight:700; cursor:pointer; transition:.15s;
+  }
+  .btn-filtrar:hover { opacity:.85; }
+  .btn-limpar {
+    padding:9px 16px; background:var(--surface2); color:var(--muted); border:1px solid var(--border);
+    border-radius:8px; font-size:13px; cursor:pointer; text-decoration:none; transition:.15s;
+    display:inline-block;
+  }
+  .btn-limpar:hover { color:var(--text); }
+
+  /* GRID */
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; }
+  .card {
+    background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+    overflow:hidden; transition:.2s; cursor:pointer; text-decoration:none; color:inherit; display:block;
+  }
+  .card:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:0 8px 30px rgba(14,165,233,.1); }
+  .card-thumb {
+    height:170px; background:#000; display:flex; align-items:center; justify-content:center; font-size:42px;
+    position:relative; overflow:hidden;
+  }
+  .card-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .card-badge {
+    position:absolute; top:10px; right:10px;
+    background:rgba(239,68,68,.85); color:#fff; font-size:10px; font-weight:700;
+    padding:3px 8px; border-radius:6px; text-transform:uppercase;
+  }
+  .card-body { padding:13px 15px; }
+  .card-epi { font-size:13px; font-weight:700; color:var(--red); margin-bottom:7px; display:flex; align-items:center; gap:5px; }
+  .card-meta { font-size:12px; color:var(--muted); display:flex; flex-direction:column; gap:4px; }
+  .card-actions { padding:10px 15px; border-top:1px solid var(--border); display:flex; gap:8px; }
+  .btn-wpp {
+    flex:1; padding:7px; background:rgba(37,211,102,.1); color:#25d366; border:1px solid rgba(37,211,102,.25);
+    border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; text-align:center;
+    text-decoration:none; display:flex; align-items:center; justify-content:center; gap:5px;
+    transition:.15s;
+  }
+  .btn-wpp:hover { background:rgba(37,211,102,.2); }
+  .btn-ver {
+    flex:1; padding:7px; background:var(--surface2); color:var(--muted); border:1px solid var(--border);
+    border-radius:7px; font-size:12px; font-weight:700; cursor:pointer; text-align:center;
+    text-decoration:none; display:flex; align-items:center; justify-content:center;
+    transition:.15s;
+  }
+  .btn-ver:hover { color:var(--text); }
+
+  /* PAGINACAO */
+  .pag { display:flex; gap:6px; justify-content:center; margin-top:28px; }
+  .pag a, .pag span {
+    padding:7px 13px; border-radius:8px; font-size:13px; text-decoration:none;
+    background:var(--surface); border:1px solid var(--border); color:var(--muted);
+    transition:.15s;
+  }
+  .pag a:hover { border-color:var(--accent); color:var(--text); }
+  .pag .cur { background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700; }
+
+  .empty { text-align:center; color:var(--muted); padding:60px 0; font-size:15px; }
+</style>
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="icon">🦺</div>
+    <div><h1>Sistema EPI</h1></div>
+  </div>
+  <div class="nav-links">
+    <a href="/monitoramento">📹 Monitoramento</a>
+    <a href="/dados" class="ativo">🗂 Dados</a>
+    <a href="/logout" class="sair">Sair</a>
+  </div>
+  <span class="nav-user">👤 {{ usuario }}</span>
+</nav>
+
+<div class="main">
+  <div class="page-header">
+    <h2>🗂 Dados Coletados</h2>
+    <span class="badge">{{ total }} registros encontrados</span>
+  </div>
+
+  <!-- FILTROS -->
+  <div class="filtros-card">
+    <div class="filtros-title">🔍 Filtros</div>
+    <form method="GET" action="/dados">
+      <div class="filtros-row">
+        <div class="filtro-group">
+          <label>Câmera</label>
+          <select name="camera">
+            <option value="">Todas</option>
+            <option value="cam_01" {% if filtros.camera_id=='cam_01' %}selected{% endif %}>CAM 01</option>
+            <option value="cam_02" {% if filtros.camera_id=='cam_02' %}selected{% endif %}>CAM 02</option>
+          </select>
+        </div>
+        <div class="filtro-group">
+          <label>EPI Ausente</label>
+          <select name="epi">
+            <option value="">Todos</option>
+            <option value="capacete" {% if filtros.epi_filtro=='capacete' %}selected{% endif %}>Capacete</option>
+            <option value="colete" {% if filtros.epi_filtro=='colete' %}selected{% endif %}>Colete</option>
+          </select>
+        </div>
+        <div class="filtro-group">
+          <label>Data início</label>
+          <input type="date" name="data_inicio" value="{{ filtros.data_inicio or '' }}">
+        </div>
+        <div class="filtro-group">
+          <label>Data fim</label>
+          <input type="date" name="data_fim" value="{{ filtros.data_fim or '' }}">
+        </div>
+        <div class="filtros-btns">
+          <button type="submit" class="btn-filtrar">Filtrar</button>
+          <a href="/dados" class="btn-limpar">Limpar</a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  {% if ocorrencias %}
+  <div class="grid">
+    {% for o in ocorrencias %}
+    <div class="card">
+      <div class="card-thumb">
+        {% if o.imagem_base64 %}
+          <img src="data:image/jpeg;base64,{{ o.imagem_base64 }}" alt="Captura">
+        {% else %}
+          📷
+        {% endif %}
+        <span class="card-badge">⚠ Alerta</span>
+      </div>
+      <div class="card-body">
+        <div class="card-epi">⚠ {{ o.epis_ausentes.upper() }}</div>
+        <div class="card-meta">
+          <span>📷 {{ o.camera_id }}</span>
+          <span>🕐 {{ o.data_hora }}</span>
+        </div>
+      </div>
+      <div class="card-actions">
+        <a class="btn-wpp" href="#" onclick="compartilharWpp({{ o.id }}, '{{ o.epis_ausentes }}', '{{ o.data_hora }}', '{{ o.camera_id }}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          WhatsApp
+        </a>
+        <a href="/dados/{{ o.id }}" class="btn-ver">Ver detalhes</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if total_paginas > 1 %}
+  <div class="pag">
+    {% if pagina > 1 %}<a href="?pagina={{ pagina-1 }}&camera={{ filtros.camera_id or '' }}&epi={{ filtros.epi_filtro or '' }}&data_inicio={{ filtros.data_inicio or '' }}&data_fim={{ filtros.data_fim or '' }}">← Ant.</a>{% endif %}
+    {% for p in range(1, total_paginas+1) %}
+      {% if p == pagina %}<span class="cur">{{ p }}</span>
+      {% else %}<a href="?pagina={{ p }}&camera={{ filtros.camera_id or '' }}&epi={{ filtros.epi_filtro or '' }}&data_inicio={{ filtros.data_inicio or '' }}&data_fim={{ filtros.data_fim or '' }}">{{ p }}</a>{% endif %}
+    {% endfor %}
+    {% if pagina < total_paginas %}<a href="?pagina={{ pagina+1 }}&camera={{ filtros.camera_id or '' }}&epi={{ filtros.epi_filtro or '' }}&data_inicio={{ filtros.data_inicio or '' }}&data_fim={{ filtros.data_fim or '' }}">Prox. →</a>{% endif %}
+  </div>
+  {% endif %}
+
+  {% else %}
+  <div class="empty">📭 Nenhuma ocorrência encontrada com esses filtros.</div>
+  {% endif %}
+</div>
+
+<script>
+function compartilharWpp(id, epi, dataHora, camera) {
+  const url = window.location.origin + '/dados/' + id;
+  const msg = `⚠ *ALERTA EPI – ${epi.toUpperCase()}*\n\n📷 Câmera: ${camera}\n🕐 Data/Hora: ${dataHora}\n\n🔗 Ver registro: ${url}`;
+  const wppUrl = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  window.open(wppUrl, '_blank');
+}
+</script>
+</body>
+</html>
